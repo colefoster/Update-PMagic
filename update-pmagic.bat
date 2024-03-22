@@ -25,7 +25,7 @@ for /f "tokens=2,3 delims=," %%a in ('wmic logicaldisk where drivetype^=2 get de
 )
 :driveSelection
 echo.
-set /p userInput="Enter the drive number or letter (e.g., '1' or 'D'): "
+set /p userInput="Enter the drive number or letter (e.g., '1' or 'd'): "
 if "!userInput!"=="" (
     echo Empty selection, please try again.
     goto driveSelection
@@ -55,7 +55,7 @@ echo.
 echo Selected drive: '!drive!'
 echo.
 
-set /p label="Enter a new label for the drive (Empty for MAGIC X): " 
+set /p label="Enter a new label for the drive (Empty for MAGIC-X): " 
 if "%label%"=="" set label=MAGIC-X
 
 :formatConfirmation
@@ -89,10 +89,12 @@ if "%greaterThan32GB%"=="True" (
         format %drive% /fs:FAT32 /q /y /v:%label%
     )
 )
-
-
-
-echo Format complete...
+if %ERRORLEVEL% equ 0 (
+    echo Format complete...
+) else (
+    echo Format failed with error %ERRORLEVEL%.
+    goto driveSelection
+)
 echo.
 
 :copyFiles 
@@ -105,11 +107,10 @@ set sourceDir=%~dp0updated-pmagic\
 
 ::Check if the folder exists
 IF EXIST "%sourceDir%" (
-    robocopy %sourceDir% %drive% /MT:4 /E /R:2 /W:1
+    robocopy %sourceDir% %drive% /MT:8 /E /R:2 /W:1
     echo File Copy Completed.
 	echo.
 	echo Drive can now be removed.
-	pause
 ) 
 if not exist "%sourceDir%" (
     echo ERROR: The source directory does not exist. Please check the .bat's local directory to ensure PMagic files exist.
