@@ -5,9 +5,9 @@
 :begin
 ::enables for loops
 setlocal enabledelayedexpansion
-echo.
-echo    ...::: P-Magic Updater Script :::...		
-echo              (v:2023-11-22)
+cls
+echo                 ...::: P-Magic Updater Script :::...              (v:2023-11-22)	
+echo (Run script with P-Magic drive inserted, Confirm Options, Wait for Copy, Repeat)
 echo.
 
 echo Available removable drives:
@@ -57,15 +57,27 @@ echo.
 
 set /p label="Enter a new label for the drive (Empty for MAGIC-X): " 
 if "%label%"=="" set label=MAGIC-X
+echo.
+echo Label: %label%
 
 :formatConfirmation
 echo.
-set /p confirm="Confirm formatting drive %drive% and set its label to '%label%'? (Enter to Continue) "
+echo Confirm formatting drive %drive% and set its label to '%label%'? 
+set /p confirmFormat="(Enter: Continue, 's': Skip Formatting, 'r': Restart, 'e': Exit): "
 ::Add optional skip for troubleshooting
-if /i "%confirm%"=="skip" (
+if /i "%confirmFormat%"=="s" (
 	echo Skipping formatting...
 	goto copyFiles
 )
+if /i "%confirmFormat%"=="r" (
+	echo Restarting...
+	goto restart
+)
+if /i "%confirmFormat%"=="r" (
+	echo Exiting...
+	goto exit
+)
+echo.
 
 :: Check if the drive size is greater than 32GB using PowerShell
 for /f "tokens=*" %%s in ('powershell -Command "(Get-PSDrive -Name '%drive%').Used -gt 34359738368"') do set greaterThan32GB=%%s
@@ -75,7 +87,7 @@ if "%greaterThan32GB%"=="True" (
     set /p confirmExFAT="Do you want to format this drive to exFAT? (Y/N): "
     if /i "%confirmExFAT%"=="y" (
         if "%label%"=="" (
-            format %drive% /fs:exFAT /q /y
+            format %drive% /fs:exFAT /q /y /v:MAGIC-X
         ) else (
             format %drive% /fs:exFAT /q /y /v:%label%
         )
@@ -84,7 +96,7 @@ if "%greaterThan32GB%"=="True" (
     )
 ) else (
     if "%label%"=="" (
-        format %drive% /fs:FAT32 /q /y
+        format %drive% /fs:FAT32 /q /y /v:MAGIC-X
     ) else (
         format %drive% /fs:FAT32 /q /y /v:%label%
     )
@@ -98,9 +110,16 @@ if %ERRORLEVEL% equ 0 (
 echo.
 
 :copyFiles 
-set /p confirmCopy="Confirm copying Update PMagic files to %drive% ('%label%')? (Enter to Continue) "
+echo Confirm copying Update PMagic files to %drive% ('%label%')? (Copy Process Takes ~20 mins)
+set /p confirmCopy="(Enter: Continue, 'r': Restart, 'e': Exit): "
+if /i "%confirmCopy%"=="r" (
+	goto restart
+)
+if /i "%confirmCopy%"=="e" (
+	goto exit
+)
 echo.
-echo Copying New PMagic files to %drive%...
+echo Copying New PMagic files to %drive% ('%label%')...
 
 ::set sourceDir to relative folder containing pmagic
 set sourceDir=%~dp0updated-pmagic\
@@ -118,18 +137,17 @@ if not exist "%sourceDir%" (
 )
 
 echo.
-
-
 set /p restart="Do you want to format another drive? (Y/N): "
-
-
 if /i "%restart%"=="y" (
-    echo Restarting...
-	cls
-    goto begin
+    goto restart
 ) else (
     goto exit
 )
+
+:restart
+echo Restarting...
+cls
+goto begin
 
 :exit
 echo Exiting...
