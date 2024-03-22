@@ -127,6 +127,7 @@ set sourceDir=%~dp0updated-pmagic\
 ::Check if the folder exists
 IF EXIST "%sourceDir%" (
     robocopy %sourceDir% %drive% /MT:8 /E /R:2 /W:1
+	label %drive% %label%
     echo File Copy Completed.
 	echo.
 	echo Drive can now be removed.
