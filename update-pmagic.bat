@@ -73,7 +73,7 @@ if /i "%confirmFormat%"=="r" (
 	echo Restarting...
 	goto restart
 )
-if /i "%confirmFormat%"=="r" (
+if /i "%confirmFormat%"=="e" (
 	echo Exiting...
 	goto exit
 )
@@ -103,6 +103,7 @@ if "%greaterThan32GB%"=="True" (
 )
 if %ERRORLEVEL% equ 0 (
     echo Format complete...
+    goto copyFiles
 ) else (
     echo Format failed with error %ERRORLEVEL%.
     goto driveSelection
@@ -110,7 +111,7 @@ if %ERRORLEVEL% equ 0 (
 echo.
 
 :copyFiles 
-echo Confirm copying Update PMagic files to %drive% ('%label%')? (Copy Process Takes ~20 mins)
+echo Confirm copying Update PMagic files to %drive% ('%label%')? (Copy Process Takes ~15 mins)
 set /p confirmCopy="(Enter: Continue, 'r': Restart, 'e': Exit): "
 if /i "%confirmCopy%"=="r" (
 	goto restart
